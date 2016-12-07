@@ -1,0 +1,22 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "FunctionName": {
+      "Description": "Lambda function name",
+      "Type": "String",
+      "Default": "alexa-skill-function"
+    },
+  },
+  "Resources": {
+    "CBCPodcastsAlexaPermissions": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "FunctionName"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "alexa-appkit.amazon.com"
+      }
+    }
+  }
+}

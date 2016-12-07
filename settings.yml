@@ -1,0 +1,20 @@
+---
+project: cbc-podcasts
+default-region: us-east-1
+code-bucket: gordon-cbc-podcasts
+apps:
+  - gordon.contrib.lambdas
+  - api-listings
+  - skill-cbc-podcasts
+
+apigateway:
+    cbc-podcast-listings:
+        description: CBC Podcast Listings API
+        resources:
+            /title/{title}:
+                methods: ANY
+                parameters:
+                  method.request.path.title: True
+                integration:
+                  type: AWS_PROXY
+                  lambda: api-listings.listings

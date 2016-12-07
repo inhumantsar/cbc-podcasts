@@ -1,0 +1,111 @@
+{
+    "_type": "ActionsTemplate", 
+    "actions": [
+        {
+            "_type": "InjectContextAndUploadToS3", 
+            "bucket": {
+                "_type": "Ref", 
+                "name": "CodeBucket"
+            }, 
+            "context_destinaton": ".context", 
+            "context_to_inject": {}, 
+            "filename": "code/contrib_lambdas_version.zip", 
+            "key": "contrib_lambdas_version.zip", 
+            "name": "version-upload"
+        }, 
+        {
+            "_type": "InjectContextAndUploadToS3", 
+            "bucket": {
+                "_type": "Ref", 
+                "name": "CodeBucket"
+            }, 
+            "context_destinaton": ".context", 
+            "context_to_inject": {}, 
+            "filename": "code/api-listings_listings.zip", 
+            "key": "api-listings_listings.zip", 
+            "name": "listings-upload"
+        }, 
+        {
+            "_type": "InjectContextAndUploadToS3", 
+            "bucket": {
+                "_type": "Ref", 
+                "name": "CodeBucket"
+            }, 
+            "context_destinaton": ".context", 
+            "context_to_inject": {}, 
+            "filename": "code/skill-cbc-podcasts_player.zip", 
+            "key": "skill-cbc-podcasts_player.zip", 
+            "name": "player-upload"
+        }
+    ], 
+    "outputs": {
+        "ListingsS3Url": {
+            "_type": "Output", 
+            "default": "", 
+            "name": "ListingsS3Url", 
+            "value": {
+                "_type": "GetAttr", 
+                "action": "listings-upload", 
+                "attr": "s3url"
+            }
+        }, 
+        "ListingsS3Version": {
+            "_type": "Output", 
+            "default": "", 
+            "name": "ListingsS3Version", 
+            "value": {
+                "_type": "GetAttr", 
+                "action": "listings-upload", 
+                "attr": "s3version"
+            }
+        }, 
+        "PlayerS3Url": {
+            "_type": "Output", 
+            "default": "", 
+            "name": "PlayerS3Url", 
+            "value": {
+                "_type": "GetAttr", 
+                "action": "player-upload", 
+                "attr": "s3url"
+            }
+        }, 
+        "PlayerS3Version": {
+            "_type": "Output", 
+            "default": "", 
+            "name": "PlayerS3Version", 
+            "value": {
+                "_type": "GetAttr", 
+                "action": "player-upload", 
+                "attr": "s3version"
+            }
+        }, 
+        "VersionS3Url": {
+            "_type": "Output", 
+            "default": "", 
+            "name": "VersionS3Url", 
+            "value": {
+                "_type": "GetAttr", 
+                "action": "version-upload", 
+                "attr": "s3url"
+            }
+        }, 
+        "VersionS3Version": {
+            "_type": "Output", 
+            "default": "", 
+            "name": "VersionS3Version", 
+            "value": {
+                "_type": "GetAttr", 
+                "action": "version-upload", 
+                "attr": "s3version"
+            }
+        }
+    }, 
+    "parallelizable": false, 
+    "parameters": {
+        "CodeBucket": {
+            "_type": "Parameter", 
+            "default": "", 
+            "name": "CodeBucket"
+        }
+    }
+}
