@@ -4,8 +4,8 @@
       "intent": "PlayAudio",
       "slots": [
         {
-          "name": "title",
-          "type": "TITLES"
+          "name": "podcast",
+          "type": "PODCASTS"
         }
       ]
     },

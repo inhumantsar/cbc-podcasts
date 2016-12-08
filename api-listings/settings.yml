@@ -5,3 +5,4 @@ lambdas:
     runtime: python
     description: Parses CBC podcast RSS feeds and returns a much simpler JSON obj
     memory: 128
+    timeout: 8

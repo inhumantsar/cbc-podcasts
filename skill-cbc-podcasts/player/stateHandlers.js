@@ -1,8 +1,8 @@
 'use strict';
 
 var Alexa = require('alexa-sdk');
-var audioData = require('./audioAssets');
 var constants = require('./constants');
+var getListing = require('./getListing');
 
 var stateHandlers = {
     startModeIntentHandlers : Alexa.CreateStateHandler(constants.states.START_MODE, {
@@ -11,7 +11,8 @@ var stateHandlers = {
          */
         'LaunchRequest' : function () {
             // Initialize Attributes
-            this.attributes['playOrder'] = Array.apply(null, {length: audioData.length}).map(Number.call, Number);
+            this.attributes['podcastListing'] = [];
+            this.attributes['playOrder'] = Array.apply(null, {length: this.attributes['podcastListing'].length}).map(Number.call, Number);
             this.attributes['index'] = 0;
             this.attributes['offsetInMilliseconds'] = 0;
             this.attributes['loop'] = true;
@@ -21,24 +22,34 @@ var stateHandlers = {
             this.handler.state = constants.states.START_MODE;
 
             var message = 'Welcome to CBC Podcasts';
-            var reprompt = 'You can say, play, and then the name of a podcast to begin. For example, play ';
+            var reprompt = 'You can say, play, and then the name of a podcast to begin. For example, play Q, or play As It Happens.';
 
             this.response.speak(message).listen(reprompt);
             this.emit(':responseReady');
         },
         'PlayAudio' : function () {
-            if (!this.attributes['playOrder']) {
-                // Initialize Attributes if undefined.
-                this.attributes['playOrder'] = Array.apply(null, {length: audioData.length}).map(Number.call, Number);
-                this.attributes['index'] = 0;
-                this.attributes['offsetInMilliseconds'] = 0;
-                this.attributes['loop'] = true;
-                this.attributes['shuffle'] = false;
-                this.attributes['playbackIndexChanged'] = true;
-                //  Change state to START_MODE
-                this.handler.state = constants.states.START_MODE;
+            var podcast;
+            console.log('PlayAudio invoked, slots: ' + this.event.request.intent.slots);
+            if (this.event.request.intent.slots.podcast.value) {
+                podcast = this.event.request.intent.slots.podcast.value;
+                console.log('PlayAudio: setting podcast name: ' + podcast);
+                getListing(podcast, (res) => {
+                  console.log('PlayAudio: podcast listing acquired. length: ' + res.length);
+                  this.attributes['podcastListing'] = res;
+                  if (!this.attributes['playOrder']) {
+                    // Initialize Attributes if undefined or out of date
+                    this.attributes['playOrder'] = Array.apply(null, {length: this.attributes['podcastListing'].length}).map(Number.call, Number);
+                    this.attributes['index'] = 0;
+                    this.attributes['offsetInMilliseconds'] = 0;
+                    this.attributes['loop'] = true;
+                    this.attributes['shuffle'] = false;
+                    this.attributes['playbackIndexChanged'] = true;
+                    //  Change state to START_MODE
+                    this.handler.state = constants.states.START_MODE;
+                  }
+                  controller.play.call(this);
+                });
             }
-            controller.play.call(this);
         },
         'AMAZON.HelpIntent' : function () {
             var message = 'Welcome to the AWS Podcast. You can say, play the audio, to begin the podcast.';
@@ -86,7 +97,7 @@ var stateHandlers = {
                 reprompt = 'You can say, play the audio, to begin.';
             } else {
                 this.handler.state = constants.states.RESUME_DECISION_MODE;
-                message = 'You were listening to ' + audioData[this.attributes['playOrder'][this.attributes['index']]].title +
+                message = 'You were listening to ' + this.attributes['podcastListing'][this.attributes['playOrder'][this.attributes['index']]].title +
                     ' Would you like to resume?';
                 reprompt = 'You can say yes to resume or no to play from the top.';
             }
@@ -136,7 +147,7 @@ var stateHandlers = {
          *  All Intent Handlers for state : RESUME_DECISION_MODE
          */
         'LaunchRequest' : function () {
-            var message = 'You were listening to ' + audioData[this.attributes['playOrder'][this.attributes['index']]].title +
+            var message = 'You were listening to ' + this.attributes['podcastListing'][this.attributes['playOrder'][this.attributes['index']]].title +
                 ' Would you like to resume?';
             var reprompt = 'You can say yes to resume or no to play from the top.';
             this.response.speak(message).listen(reprompt);
@@ -145,7 +156,7 @@ var stateHandlers = {
         'AMAZON.YesIntent' : function () { controller.play.call(this) },
         'AMAZON.NoIntent' : function () { controller.reset.call(this) },
         'AMAZON.HelpIntent' : function () {
-            var message = 'You were listening to ' + audioData[this.attributes['index']].title +
+            var message = 'You were listening to ' + this.attributes['podcastListing'][this.attributes['index']].title +
                 ' Would you like to resume?';
             var reprompt = 'You can say yes to resume or no to play from the top.';
             this.response.speak(message).listen(reprompt);
@@ -193,9 +204,12 @@ var controller = function () {
                 this.attributes['playbackFinished'] = false;
             }
 
+            console.log('play: index:' + this.attributes['index']);
             var token = String(this.attributes['playOrder'][this.attributes['index']]);
+            console.log('play: token:' + token);
             var playBehavior = 'REPLACE_ALL';
-            var podcast = audioData[this.attributes['playOrder'][this.attributes['index']]];
+            var podcast = this.attributes['podcastListing'][token];
+            console.log('play: podcast: %j', podcast);
             var offsetInMilliseconds = this.attributes['offsetInMilliseconds'];
             // Since play behavior is REPLACE_ALL, enqueuedToken attribute need to be set to null.
             this.attributes['enqueuedToken'] = null;
@@ -226,7 +240,7 @@ var controller = function () {
             var index = this.attributes['index'];
             index += 1;
             // Check for last audio file.
-            if (index === audioData.length) {
+            if (index === this.attributes['podcastListing'].length) {
                 if (this.attributes['loop']) {
                     index = 0;
                 } else {
@@ -256,7 +270,7 @@ var controller = function () {
             // Check for last audio file.
             if (index === -1) {
                 if (this.attributes['loop']) {
-                    index = audioData.length - 1;
+                    index = this.attributes['podcastListing'].length - 1;
                 } else {
                     // Reached at the end. Thus reset state to start mode and stop playing.
                     this.handler.state = constants.states.START_MODE;
@@ -290,7 +304,7 @@ var controller = function () {
         shuffleOn: function () {
             // Turn on shuffle play.
             this.attributes['shuffle'] = true;
-            shuffleOrder((newOrder) => {
+            shuffleOrder(this.attributes['podcastListing'], (newOrder) => {
                 // Play order have been shuffled. Re-initializing indices and playing first song in shuffled order.
                 this.attributes['playOrder'] = newOrder;
                 this.attributes['index'] = 0;
@@ -305,7 +319,7 @@ var controller = function () {
                 this.attributes['shuffle'] = false;
                 // Although changing index, no change in audio file being played as the change is to account for reordering playOrder
                 this.attributes['index'] = this.attributes['playOrder'][this.attributes['index']];
-                this.attributes['playOrder'] = Array.apply(null, {length: audioData.length}).map(Number.call, Number);
+                this.attributes['playOrder'] = Array.apply(null, {length: this.attributes['podcastListing'].length}).map(Number.call, Number);
             }
             controller.play.call(this);
         },
@@ -338,9 +352,9 @@ function canThrowCard() {
     }
 }
 
-function shuffleOrder(callback) {
+function shuffleOrder(podcastListing, callback) {
     // Algorithm : Fisher-Yates shuffle
-    var array = Array.apply(null, {length: audioData.length}).map(Number.call, Number);
+    var array = Array.apply(null, {length: podcastListing.length}).map(Number.call, Number);
     var currentIndex = array.length;
     var temp, randomIndex;
 

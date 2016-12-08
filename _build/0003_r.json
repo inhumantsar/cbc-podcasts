@@ -81,7 +81,7 @@
                     ]
                 },
                 "Runtime": "python2.7",
-                "Timeout": 3
+                "Timeout": 8
             },
             "Type": "AWS::Lambda::Function"
         },
@@ -102,7 +102,7 @@
             },
             "Type": "AWS::ApiGateway::RestApi"
         },
-        "CbcPodcastListingsDeployment307D5188": {
+        "CbcPodcastListingsDeployment5Dffa520": {
             "DependsOn": [
                 "CbcPodcastListingsTitleTitleAny"
             ],
@@ -422,7 +422,7 @@
                                         "dynamodb:*"
                                     ],
                                     "Effect": "Allow",
-                                    "Resource": "arn:aws:dynamodb:::table/skill-cbc-podcasts"
+                                    "Resource": "arn:aws:dynamodb:*:*:table/skill-cbc-podcasts"
                                 },
                                 {
                                     "Action": [
@@ -520,7 +520,7 @@
                     ]
                 },
                 "Runtime": "nodejs4.3",
-                "Timeout": 3
+                "Timeout": 8
             },
             "Type": "AWS::Lambda::Function"
         },

@@ -5,6 +5,7 @@ lambdas:
     runtime: nodejs4.3
     description: Teaches Alexa how to play CBC podcasts
     memory: 128
+    timeout: 8
     policies:
       full_dynamodb_plus_logs:
         Version: "2012-10-17"

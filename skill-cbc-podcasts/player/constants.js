@@ -8,6 +8,14 @@ module.exports = Object.freeze({
     //  DynamoDB Table name
     dynamoDBTableName : 'skill-cbc-podcasts',
 
+    // Podcast Listing Service endpoint
+    listingService: {
+      host: 'pz6fy16719.execute-api.us-east-1.amazonaws.com',
+      pathPrefix: 'dev',
+      port: 443
+    },
+
+
     /*
      *  States:
      *  START_MODE : Welcome state when the audio list has not begun.
