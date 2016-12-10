@@ -1,5 +1,10 @@
 # CBC Podcasts
 
+## Heads up: This is great example, but...
+Alexa targets can only accept HTTPS streams. The CBC, and most podcasters, serve their stuff over HTTP because why waste the cycles on encrypting public audio streams? That being said, it does work. Alexa can use the skill to let the user ask for a particular podcast. The listing API will parse a podcast RSS feed given its title, and return the item list as JSON. Finally, Alexa will take that list, grab the first episode (seems to always be latest, coming from the CBC at least) and play it.
+
+## The rest of the old README
+
 There are two AWS Lambda functions here: a Python function that finds and reads the CBC podcast RSS feeds, the other is a NodeJS-based podcast player skill for Alexa based on the [sample Alexa audio player project](https://github.com/alexa/skill-sample-nodejs-audio-player).
 
 ## Deployment
